@@ -1,0 +1,13 @@
+### Following combination will ignore all files without extension (except makefiles), so executables will not be tracked ###
+# ----------- #
+# Ignore all
+*
+
+# Unignore all with extensions
+!*.*
+
+# Unignore all dirs
+!*/
+
+# Ignore .DS_Store
+.DS_Store
