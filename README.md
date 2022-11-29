@@ -1,5 +1,5 @@
 # File system
-- learnopengl_projects includes my implementations and build of the various programs
+- PoseEstimation includes my implementations and build of the various programs
   shown in the LearnOpenGL book. How to build with make is outlined below.
 - src has the source files for the various tutorial projects.
 - include has required header files for the projects.
