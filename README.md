@@ -7,7 +7,7 @@
       Note only the root directory of the header files (also named glm) is
       needed from the glm repo.
     - learnopengl contains useful custom headers adapted from [LearnOpenGL](https://github.com/JoeyDeVries/LearnOpenGL).
-- resources has textures/3D-models that may be useful in the future of this project.
+- resources has textures/3D-models used in this project.
 - opengl_test provides a source file that can be used to test if OpenGL is working properly.
 - makefile_template.txt is a template makefile for compiling this project.
 
