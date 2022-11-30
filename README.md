@@ -26,16 +26,13 @@ greater than 3.3 (used 4.6 here). Click Generate, and unzip glad folder to
 
 ## GLFW
 - Download the source package from https://www.glfw.org/download.html, unzipping into OpenGl/deps/glfw-3.3.8 directory.
-- Follow https://www.glfw.org/docs/latest/compile.html to compile with appropriate OS. The steps for Ubuntu are outlined below.
-  ### Build with Ubuntu:
-  - Install dependencies for X11 (not using wayland since won't work with nvidia gpu):
+- Follow https://www.glfw.org/docs/latest/compile.html to compile with appropriate OS. The steps for Ubuntu and Mac are outlined below.
+  ### Build with Ubuntu and Mac:
+  - **Ubuntu only**: Install dependencies for X11 (not using wayland since won't work with nvidia gpu): ```sudo apt install xorg-dev```.
+  - Make build directory then generate build files with cmake (make sure to be in deps/glfw-3.3.8 directory):
     ```
-    sudo apt install xorg-dev
     cd deps/glfw-3.3.8
     mkdir build
-    ```
-  - Generate build files with cmake (make sure to be in deps/glfw-3.3.8 directory):
-    ```
     cmake -S . -B build
     ```
   - Compile the library:
@@ -47,9 +44,9 @@ greater than 3.3 (used 4.6 here). Click Generate, and unzip glad folder to
   ### Steps for after build
   - Copy glfw-3.3.8/include/GLFW folder into /usr/local/include
   - In .zshrc or .bashrc, add location of GLFW to PKG_CONFIG_PATH. For example:
-  ```export PKG_CONFIG_PATH=my_path/Projects/OpenGL/deps/glfw-3.3.8/build/src:$PKG_CONFIG_PATH```
-  - May need to change ownership of /usr/local/include so make can be run without sudo access
-    - Check current owner of /usr/local/include. Running ```ls -l``` outputs ```drwxr-xr-x  8 root root 4096 Nov 20 03:46 include```. After the ```chown``` command ```ls -l``` outputs ```drwxr-xr-x  8 my_user my_group 4096 Nov 20 03:46 include```. You can check you group with ```-id -g```.
+  ```export PKG_CONFIG_PATH=my_path/OpenGL/deps/glfw-3.3.8/build/src:$PKG_CONFIG_PATH```
+  - Try using the makefile to compile the opengl_test project. If there is a permission error you may need to change ownership of /usr/local/include so make can be run without sudo access.
+    - Check current owner of /usr/local/include. First do ```cd /usr/local```. Then if running ```ls -l``` outputs ```drwxr-xr-x  8 root root 4096 Nov 20 03:46 include```, you'll need to change ownership. After doing so with the ```chown``` command below, ```ls -l``` outputs ```drwxr-xr-x  8 my_user my_group 4096 Nov 20 03:46 include```, as desired. You can check you group with ```-id -g```.
     ```
     cd /usr/local
     sudo chown -R my_user:my_group include/
