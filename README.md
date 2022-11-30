@@ -45,7 +45,7 @@ greater than 3.3 (used 4.6 here). Click Generate, and unzip glad folder to
   - Copy glfw-3.3.8/include/GLFW folder into /usr/local/include
   - In .zshrc or .bashrc, add location of GLFW to PKG_CONFIG_PATH. For example:
   ```export PKG_CONFIG_PATH=my_path/OpenGL/deps/glfw-3.3.8/build/src:$PKG_CONFIG_PATH```
-  - Try using the makefile to compile the opengl_test project. If there is a permission error you may need to change ownership of /usr/local/include so make can be run without sudo access.
+  - Try using the makefile to compile the opengl_test project. If there is a permission error you may need to change ownership of /usr/local/include so make can run properly.
     - Check current owner of /usr/local/include. First do ```cd /usr/local```. Then if running ```ls -l``` outputs ```drwxr-xr-x  8 root root 4096 Nov 20 03:46 include```, you'll need to change ownership. After doing so with the ```chown``` command below, ```ls -l``` outputs ```drwxr-xr-x  8 my_user my_group 4096 Nov 20 03:46 include```, as desired. You can check you group with ```-id -g```.
     ```
     cd /usr/local
