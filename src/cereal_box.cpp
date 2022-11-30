@@ -23,8 +23,8 @@ int drawORBfeatures();
 void computeORBfeatures();
 
 // settings
-const unsigned int SCR_WIDTH = 1200;
-const unsigned int SCR_HEIGHT = 900;
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
 
 // post processing
 // -----------------------------------------------------
@@ -75,8 +75,8 @@ int main()
 
     // build and compile our shader program
     // ------------------------------------
-    Shader modelShader("shader.vert", "shader.frag");
-    Shader wireShader("wireShader.vert", "wireShader.frag");
+    Shader modelShader("shaders/shader.vert", "shaders/shader.frag");
+    Shader wireShader("shaders/wireShader.vert", "shaders/wireShader.frag");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------- CUBE!!!!! --------------------------------------
@@ -183,7 +183,7 @@ int main()
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    unsigned char *data = stbi_load("kelloggs_cereal.png", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("../resources/textures/kelloggs_cereal.png", &width, &height, &nrChannels, 0);
     if (data){
         // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -256,6 +256,9 @@ int main()
 
         // Do asynchronous post-processing
         if (postProcessingDone){
+          // display the processed image
+          cv::imshow("ORB Features",outimg);
+          cv::waitKey(1);
           postProcessingDone = false;
           // Convert texture to cv::Mat, and perform orb detection
           glReadPixels(0, 0, img.cols, img.rows, GL_BGR, GL_UNSIGNED_BYTE, img.data);
@@ -299,8 +302,6 @@ int drawORBfeatures()
   computeORBfeatures();
   cv::drawKeypoints( img, keypoints, outimg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
   cv::flip(outimg, outimg, 0);
-  cv::imshow("ORB Features",outimg);
-  cv::waitKey(1);
   postProcessingDone = true;
   return 0;
 }

@@ -1,15 +1,15 @@
 # File system
-- PoseEstimation includes my implementations and build of the various programs
-  shown in the LearnOpenGL book. How to build with make is outlined below.
-- src has the source files for the various tutorial projects.
+- PoseEstimation is an object pose estimation project utilizing OpenGL for real-time synthetic data. How to build with make is outlined below.
+- src has the source files for the project.
 - include has required header files for the projects.
     - stb_image.h is a image loader header from https://github.com/nothings/stb
     - glm is a OpenGL math header library from https://github.com/g-truc/glm.
       Note only the root directory of the header files (also named glm) is
       needed from the glm repo.
-    - learnopengl contains my custom headers made for the LearnOpenGL programs.
-- resources has textures/3D-models etc used in the projects.
-- makefile_template is an example makefile used for building programs in learnopengl_projects.
+    - learnopengl contains useful custom headers adapted from [LearnOpenGL](https://github.com/JoeyDeVries/LearnOpenGL).
+- resources has textures/3D-models that may be useful in the future of this project.
+- opengl_test provides a source file that can be used to test if OpenGL is working properly.
+- makefile_template.txt is a template makefile for compiling this project.
 
 # Dependency instructions:
 Recommended file structure so provided makefiles work:
@@ -56,10 +56,8 @@ greater than 3.3 (used 4.6 here). Click Generate, and unzip glad folder to
     ```
   - You should now be able to compile OpenGL programs :)
 
-
-# Use makefile to automate code compilation
-1. copy makefile_template into same folder as main.cpp
-2. rename makefile_template to makefile
-3. update ```MAIN_NAME``` variable in makefile
-4. from terminal run ```make```
-5. run ```make clean``` to remove glad.o object file from glad/src and executable from current directory
+## OpenCV
+- Note OpenCV core ([opencv](https://github.com/opencv/opencv)) and OpenCV's extra modules ([opencv_contrib](https://github.com/opencv/opencv_contrib)) are required for this project.
+- This project was tested with OpenCV 4.6.0.
+- To install OpenCV for your platform, see the OpenCV [docs](https://docs.opencv.org/4.6.0/df/d65/tutorial_table_of_content_introduction.html).
+- It is recommended to use the stable release of [opencv](https://github.com/opencv/opencv). However for [opencv_contrib](https://github.com/opencv/opencv_contrib), the latest 4.x branch was used with success.
