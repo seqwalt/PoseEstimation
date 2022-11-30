@@ -1,17 +1,7 @@
-# Check if using Mac (Darwin OS) or Linux
-current_OS := $(shell uname -s)
-ifeq ($(current_OS),Linux)
-	OPENGL_DIR=my_linux_path/OpenGL
-	CFLAGS=`pkg-config --cflags glfw3 opencv4`
-	LIBS=`pkg-config --static --libs glfw3 opencv4`
-endif
-ifeq ($(current_OS),Darwin)
-	OPENGL_DIR=my_mac_path/OpenGL
-	CFLAGS=`pkg-config --cflags glfw3 opencv`
-	LIBS=`pkg-config --static --libs glfw3 opencv`
-endif
-
 # Define variables
+OPENGL_DIR=my_path/OpenGL
+CFLAGS=`pkg-config --cflags glfw3 opencv4`
+LIBS=`pkg-config --static --libs glfw3 opencv4`
 GLAD_SRC_DIR=$(OPENGL_DIR)/deps/glad/src
 GLFW_PATH=$(OPENGL_DIR)/deps/glfw-3.3.8/build/src
 INCLUDE_PATH=$(OPENGL_DIR)/PoseEstimation/include
