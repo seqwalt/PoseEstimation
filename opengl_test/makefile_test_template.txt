@@ -1,16 +1,11 @@
-# Check if using Mac (Darwin OS) or Linux
-current_OS := $(shell uname -s)
-ifeq ($(current_OS),Linux)
-	OPENGL_DIR=my_path/OpenGL
-endif
-ifeq ($(current_OS),Darwin)
-	OPENGL_DIR=my_path/OpenGL
-endif
+# Hello Triangle makefile
 
+# Define Variables
+OPENGL_DIR=my_path/OpenGL
 GLAD_SRC_DIR=$(OPENGL_DIR)/deps/glad/src
 CFLAGS=`pkg-config --cflags glfw3`
 GLFW_PATH=$(OPENGL_DIR)/deps/glfw-3.3.8/build/src
-INCLUDE_PATH=$(OPENGL_DIR)/learnopengl_projects/include
+INCLUDE_PATH=$(OPENGL_DIR)/PoseEstimation/include
 LIBS=`pkg-config --static --libs glfw3`
 CPP_VER=17
 MAIN_NAME=hello_triangle
