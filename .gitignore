@@ -16,4 +16,4 @@
 *.dSYM/
 
 
-.vscode/
+# .vscode/
