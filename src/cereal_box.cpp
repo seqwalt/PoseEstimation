@@ -17,10 +17,14 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+using namespace cv;
+
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 int drawORBfeatures();
 void computeORBfeatures();
+void computeORBfeatureMatches();
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -38,6 +42,17 @@ cv::Ptr<cv::FeatureDetector> detector = cv::ORB::create();
 cv::Ptr<cv::DescriptorExtractor> descriptor = cv::ORB::create();
 bool postProcessingDone = true;
 std::future<int> async_out;
+
+
+// matching global variables
+bool firstFrame = false;
+std::vector<cv::KeyPoint> keypointsOld;
+cv::Mat descriptorsOld;
+std::vector<DMatch> matches;
+std::vector< DMatch > good_matches;
+Ptr<DescriptorMatcher> matcher  = DescriptorMatcher::create ( "BruteForce-Hamming" );
+
+
 // -----------------------------------------------------
 
 int main()
@@ -300,9 +315,18 @@ int main()
 int drawORBfeatures()
 {
   computeORBfeatures();
+
+  computeORBfeatureMatches();
+
   cv::drawKeypoints( img, keypoints, outimg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
   cv::flip(outimg, outimg, 0);
   postProcessingDone = true;
+
+  // matching code
+  firstFrame = true;
+  keypointsOld = keypoints;
+  descriptorsOld = descriptors;
+
   return 0;
 }
 
@@ -312,6 +336,25 @@ void computeORBfeatures()
   detector->detect(img, keypoints);
   // Rotated BRIEF
   descriptor->compute(img, keypoints, descriptors);
+}
+
+void computeORBfeatureMatches()
+{
+  if (firstFrame) {
+    matcher->match ( descriptors, descriptorsOld, matches);
+    double min_dist=10000, max_dist=0;
+    for ( int i = 0; i < descriptorsOld.rows; i++ ) {
+      double dist = matches[i].distance;
+      if ( dist < min_dist ) min_dist = dist;
+      if ( dist > max_dist ) max_dist = dist;
+    }
+    for ( int i = 0; i < descriptorsOld.rows; i++ ) {
+        if ( matches[i].distance <= std::max( 2*min_dist, 30.0 ) )
+        {
+          good_matches.push_back ( matches[i] );
+        }
+    }
+  }
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
