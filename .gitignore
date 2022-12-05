@@ -14,3 +14,6 @@
 
 # Ignore auto-generated gdb debugging folder
 *.dSYM/
+
+
+.vscode/
