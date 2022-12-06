@@ -43,7 +43,8 @@ algorithm.
 <!-- Additionally, as long as we can render a model that has visually rich regions (such as the cereal
 box), our algorithm should be able to detect features properly. -->
 
-INCLUDE Image of Cereal Box
+![Cereal Box](/PoseEstimation//assets/logo.png)
+
 
 ## ORB Feature Extraction and Matching
 ORB features [12] are extracted from each reference image and stored. These 2D features have known 3D counterparts. 
