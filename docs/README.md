@@ -1,16 +1,16 @@
-## Pose Estimation for Low SWAP Systems
+# Pose Estimation for Low SWAP Systems
 
-# Problem
-
-
-# Motivation
+## Problem
 
 
-# Current State-of-the-Art
+## Motivation
+
+
+## Current State-of-the-Art
 
 
 
-# Approach
+## Approach
 
 
 
