@@ -25,6 +25,9 @@ void processInput(GLFWwindow *window);
 int drawORBfeatures();
 void computeORBfeatures();
 void computeORBfeatureMatches();
+cv::Mat get3Dfeatures(glm::mat4 projection_mat, glm::mat4 view_mat, glm::mat4 model_mat);
+void fromCV2GLM(const cv::Mat& cvmat, glm::mat4* glmmat);
+void fromGLM2CV(const glm::mat4& glmmat, cv::Mat* cvmat);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -35,6 +38,16 @@ const unsigned int SCR_HEIGHT = 600;
 // initialize OpenCV image matrix
 cv::Mat img(SCR_HEIGHT, SCR_WIDTH, CV_8UC3); // initial rendered image
 cv::Mat outimg(SCR_HEIGHT, SCR_WIDTH, CV_8UC3); // final post-processed image
+
+// Create struct that holds ORB descriptors and associated 3D vector for each detected feature
+// Used for reference image creation, and EPnP
+struct OrbData3D {
+  cv::Mat OrbDescriptors;
+  cv::Mat Features3D;
+};
+// initialize function
+OrbData3D createRefImg(Shader modelShader, unsigned int texture, unsigned int VAO, glm::mat4 projection_mat, glm::mat4 view_mat);
+
 // initialize keypoints, detector and descriptor for ORB
 std::vector<cv::KeyPoint> keypoints;
 cv::Mat descriptors;
@@ -43,7 +56,6 @@ cv::Ptr<cv::DescriptorExtractor> descriptor = cv::ORB::create();
 bool postProcessingDone = true;
 std::future<int> async_out;
 
-
 // matching global variables
 bool firstFrame = false;
 std::vector<cv::KeyPoint> keypointsOld;
@@ -51,7 +63,6 @@ cv::Mat descriptorsOld;
 std::vector<DMatch> matches;
 std::vector< DMatch > good_matches;
 Ptr<DescriptorMatcher> matcher  = DescriptorMatcher::create ( "BruteForce-Hamming" );
-
 
 // -----------------------------------------------------
 
@@ -240,6 +251,9 @@ int main()
     // Enable z-buffer for depth testing
     glEnable(GL_DEPTH_TEST);
 
+    // create single reference image
+    createRefImg(modelShader, texture, VAO, projection_mat, view_mat);
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -289,11 +303,6 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glEnable(GL_DEPTH_TEST); // re-enable depth testing
 
-        // TODO:
-        // Implement map from pixel location to 3D point in model coordinates (inverse of
-        // projection_mat*view_mat*model_mat ?). This will allow
-        // for generation of reference images with cooresponding 3D cooridnates for use with EPnP.
-
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window); // See Double Buffer note in LearnOpenGL book
@@ -310,6 +319,39 @@ int main()
     // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
+}
+
+OrbData3D createRefImg(Shader modelShader, unsigned int texture, unsigned int VAO, glm::mat4 projection_mat, glm::mat4 view_mat)
+{
+   // Create single reference image
+   // -----------------------------
+  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear depth and color buffers
+  // bind textures on corresponding texture units
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  // Model matrix to transform to world coords
+  glm::mat4 model_mat = glm::mat4(1.0f); // identity
+  model_mat = glm::rotate(model_mat, glm::radians(10.0f), glm::vec3(0.3, 1.0, 0.0));
+  // Enable the shader program for rendering model
+  modelShader.use();
+  modelShader.setMat4("model", model_mat); // update uniform
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  glBindVertexArray(VAO);
+  glDrawArrays(GL_TRIANGLES, 0, 36);
+  // Convert texture to cv::Mat, and perform orb detection
+  glReadPixels(0, 0, img.cols, img.rows, GL_BGR, GL_UNSIGNED_BYTE, img.data);
+  // -----------------------------
+
+  // Compute 3D feature locations in model space
+  // -----------------------------
+  computeORBfeatures(); // keypoints variable and descriptors variable now are loaded with data
+  OrbData3D refImgData;
+  refImgData.OrbDescriptors = descriptors;
+  refImgData.Features3D = get3Dfeatures(projection_mat, view_mat, model_mat);
+  // -----------------------------
+
+  return refImgData;
 }
 
 int drawORBfeatures()
@@ -333,9 +375,9 @@ int drawORBfeatures()
 void computeORBfeatures()
 {
   // Oriented FAST
-  detector->detect(img, keypoints);
+  detector->detect(img, keypoints); // keypoints is filled with data
   // Rotated BRIEF
-  descriptor->compute(img, keypoints, descriptors);
+  descriptor->compute(img, keypoints, descriptors); // descriptors is filled with data
 }
 
 void computeORBfeatureMatches()
@@ -355,6 +397,62 @@ void computeORBfeatureMatches()
         }
     }
   }
+}
+
+// Extract 3D object coordinates from ORB features
+// https://stackoverflow.com/questions/25687213/how-does-gl-position-becomes-a-x-y-position-in-the-window
+// https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/gluUnProject.xml
+// https://www.khronos.org/opengl/wiki/GluProject_and_gluUnProject_code
+cv::Mat get3Dfeatures(glm::mat4 projection_mat, glm::mat4 view_mat, glm::mat4 model_mat)
+{
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport); // retrieves viewport values (x, y, width, height)
+
+  // Convert keypoints into NDC normalized device coordinates (x,y,depth). Note all values are between 0 and 1.
+  glm::mat4 NDCpos; // rows, columns, type (using floats here)
+  float depth;
+  for (int i = 0; i < keypoints.size(); i++){
+    // Transformation of normalized coordinates between -1 and 1
+    NDCpos[0][i] = (keypoints[i].pt.x/SCR_WIDTH)*2 - 1;
+    NDCpos[1][i] = (keypoints[i].pt.y/SCR_WIDTH)*2 - 1;
+    glReadPixels(keypoints[i].pt.x, keypoints[i].pt.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+    NDCpos[2][i] = 2*depth - 1;
+    NDCpos[3][i] = 1.0f;
+  }
+
+  glm::mat4 PVM_inv = glm::inverse(projection_mat * view_mat * model_mat);
+  glm::mat4 out = PVM_inv * NDCpos; // unnormalized object coordinates
+  glm::mat4 last_row_mat;
+  // TODO fix this next part:
+  last_row_mat[0] = 1./out[3];
+  last_row_mat[1] = 1./out[3];
+  last_row_mat[2] = 1./out[3];
+  last_row_mat[3] = 1./out[3];
+  cv::Mat objectCoordinates, temp;
+  fromGLM2CV(glm::matrixCompMult(last_row_mat, out), &temp);
+  temp(Range(0, temp.rows - 1), Range(0, temp.cols)).copyTo(objectCoordinates);
+
+  return objectCoordinates;
+}
+
+// convert from cv::Mat to glm::mat4
+// https://stackoverflow.com/questions/44409443/how-a-cvmat-translate-from-to-a-glmmat4
+void fromCV2GLM(const cv::Mat& cvmat, glm::mat4* glmmat)
+{
+    if (cvmat.cols != 4 || cvmat.rows != 4 || cvmat.type() != CV_32FC1) {
+        std::cout << "Matrix conversion error!" << std::endl;
+        return;
+    }
+    memcpy(glm::value_ptr(*glmmat), cvmat.data, 16 * sizeof(float));
+}
+
+// convert from glm::mat4 to cv::Mat
+void fromGLM2CV(const glm::mat4& glmmat, cv::Mat* cvmat)
+{
+    if (cvmat->cols != 4 || cvmat->rows != 4) {
+        (*cvmat) = cv::Mat(4, 4, CV_32F);
+    }
+    memcpy(cvmat->data, glm::value_ptr(glmmat), 16 * sizeof(float));
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
