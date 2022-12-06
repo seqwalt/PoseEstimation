@@ -252,7 +252,11 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
     // create single reference image
-    createRefImg(modelShader, texture, VAO, projection_mat, view_mat);
+    OrbData3D refImgData = createRefImg(modelShader, texture, VAO, projection_mat, view_mat);
+    // cv::drawKeypoints( img, keypoints, outimg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
+    // cv::flip(outimg, outimg, 0);
+    // cv::imshow("Reference Image with ORB features", outimg);
+    // cv::waitKey(0);
 
     // render loop
     // -----------
@@ -321,39 +325,6 @@ int main()
     return 0;
 }
 
-OrbData3D createRefImg(Shader modelShader, unsigned int texture, unsigned int VAO, glm::mat4 projection_mat, glm::mat4 view_mat)
-{
-   // Create single reference image
-   // -----------------------------
-  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear depth and color buffers
-  // bind textures on corresponding texture units
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  // Model matrix to transform to world coords
-  glm::mat4 model_mat = glm::mat4(1.0f); // identity
-  model_mat = glm::rotate(model_mat, glm::radians(10.0f), glm::vec3(0.3, 1.0, 0.0));
-  // Enable the shader program for rendering model
-  modelShader.use();
-  modelShader.setMat4("model", model_mat); // update uniform
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  glBindVertexArray(VAO);
-  glDrawArrays(GL_TRIANGLES, 0, 36);
-  // Convert texture to cv::Mat, and perform orb detection
-  glReadPixels(0, 0, img.cols, img.rows, GL_BGR, GL_UNSIGNED_BYTE, img.data);
-  // -----------------------------
-
-  // Compute 3D feature locations in model space
-  // -----------------------------
-  computeORBfeatures(); // keypoints variable and descriptors variable now are loaded with data
-  OrbData3D refImgData;
-  refImgData.OrbDescriptors = descriptors;
-  refImgData.Features3D = get3Dfeatures(projection_mat, view_mat, model_mat);
-  // -----------------------------
-
-  return refImgData;
-}
-
 int drawORBfeatures()
 {
   computeORBfeatures();
@@ -399,6 +370,39 @@ void computeORBfeatureMatches()
   }
 }
 
+OrbData3D createRefImg(Shader modelShader, unsigned int texture, unsigned int VAO, glm::mat4 projection_mat, glm::mat4 view_mat)
+{
+   // Create single reference image
+   // -----------------------------
+  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear depth and color buffers
+  // bind textures on corresponding texture units
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  // Model matrix to transform to world coords
+  glm::mat4 model_mat = glm::mat4(1.0f); // identity
+  model_mat = glm::rotate(model_mat, glm::radians(20.0f), glm::vec3(0.3, 1.0, 0.0));
+  // Enable the shader program for rendering model
+  modelShader.use();
+  modelShader.setMat4("model", model_mat); // update uniform
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  glBindVertexArray(VAO);
+  glDrawArrays(GL_TRIANGLES, 0, 36);
+  // Convert texture to cv::Mat, and perform orb detection
+  glReadPixels(0, 0, img.cols, img.rows, GL_BGR, GL_UNSIGNED_BYTE, img.data);
+  // -----------------------------
+
+  // Compute 3D feature locations in model space
+  // -----------------------------
+  computeORBfeatures(); // keypoints variable and descriptors variable now are loaded with data
+  OrbData3D refImgData;
+  refImgData.OrbDescriptors = descriptors;
+  refImgData.Features3D = get3Dfeatures(projection_mat, view_mat, model_mat);
+  // -----------------------------
+
+  return refImgData;
+}
+
 // Extract 3D object coordinates from ORB features
 // https://stackoverflow.com/questions/25687213/how-does-gl-position-becomes-a-x-y-position-in-the-window
 // https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/gluUnProject.xml
@@ -409,30 +413,27 @@ cv::Mat get3Dfeatures(glm::mat4 projection_mat, glm::mat4 view_mat, glm::mat4 mo
   glGetIntegerv(GL_VIEWPORT, viewport); // retrieves viewport values (x, y, width, height)
 
   // Convert keypoints into NDC normalized device coordinates (x,y,depth). Note all values are between 0 and 1.
-  glm::mat4 NDCpos; // rows, columns, type (using floats here)
+  glm::vec4 NDCpos;
   float depth;
+  glm::mat4 PVM_inv = glm::inverse(projection_mat * view_mat * model_mat);
+  cv::Mat objCoords = cv::Mat(keypoints.size(), 3, CV_32F);  // rows, columns, type (using floats here)
+
   for (int i = 0; i < keypoints.size(); i++){
     // Transformation of normalized coordinates between -1 and 1
-    NDCpos[0][i] = (keypoints[i].pt.x/SCR_WIDTH)*2 - 1;
-    NDCpos[1][i] = (keypoints[i].pt.y/SCR_WIDTH)*2 - 1;
+    NDCpos[0] = (keypoints[i].pt.x/SCR_WIDTH)*2 - 1;
+    NDCpos[1] = (keypoints[i].pt.y/SCR_WIDTH)*2 - 1;
     glReadPixels(keypoints[i].pt.x, keypoints[i].pt.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
-    NDCpos[2][i] = 2*depth - 1;
-    NDCpos[3][i] = 1.0f;
+    NDCpos[2] = 2*depth - 1;
+    NDCpos[3] = 1.0f;
+
+    glm::vec4 out = PVM_inv * NDCpos; // unnormalized object coordinates
+    out[3]=1.0/out[3];
+    objCoords.at<float>(i,0) = out[0]*out[3];
+    objCoords.at<float>(i,1) = out[1]*out[3];
+    objCoords.at<float>(i,2) = out[2]*out[3];
   }
 
-  glm::mat4 PVM_inv = glm::inverse(projection_mat * view_mat * model_mat);
-  glm::mat4 out = PVM_inv * NDCpos; // unnormalized object coordinates
-  glm::mat4 last_row_mat;
-  // TODO fix this next part:
-  last_row_mat[0] = 1./out[3];
-  last_row_mat[1] = 1./out[3];
-  last_row_mat[2] = 1./out[3];
-  last_row_mat[3] = 1./out[3];
-  cv::Mat objectCoordinates, temp;
-  fromGLM2CV(glm::matrixCompMult(last_row_mat, out), &temp);
-  temp(Range(0, temp.rows - 1), Range(0, temp.cols)).copyTo(objectCoordinates);
-
-  return objectCoordinates;
+  return objCoords;
 }
 
 // convert from cv::Mat to glm::mat4
