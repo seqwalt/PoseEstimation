@@ -15,5 +15,5 @@
 # Ignore auto-generated gdb debugging folder
 *.dSYM/
 
-
+# Ignore vscode folder
 .vscode/
