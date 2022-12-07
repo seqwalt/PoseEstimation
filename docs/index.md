@@ -43,7 +43,7 @@ algorithm.
 <!-- Additionally, as long as we can render a model that has visually rich regions (such as the cereal
 box), our algorithm should be able to detect features properly. -->
 
-![Cereal Box](/PoseEstimation/docs/assets/cereal_box.png)
+![Cereal Box](/assets/cereal_box.png)
 
 
 ## ORB Feature Extraction and Matching
