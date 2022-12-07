@@ -45,8 +45,6 @@ box), our algorithm should be able to detect features properly. -->
 
 ![Cereal Box](./assets/cereal_box.png)
 
-docs/assets/cereal_box.png
-
 
 ## ORB Feature Extraction and Matching
 ORB features [12] are extracted from each reference image and stored. These 2D features have known 3D counterparts. 
