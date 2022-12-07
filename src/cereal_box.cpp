@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <future>
+#include <unistd.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
@@ -47,7 +48,9 @@ struct OrbData3D {
   cv::Mat Features3D;
 };
 // initialize function
-OrbData3D createRefImg(Shader modelShader, unsigned int texture, unsigned int VAO, glm::mat4 projection_mat, glm::mat4 view_mat);
+OrbData3D createRefImgData(Shader modelShader, unsigned int texture, unsigned int VAO, glm::mat4 projection_mat, glm::mat4 view_mat, glm::mat4 ref_model_mat);
+float ref_angle = glm::radians(180.0f);
+glm::vec3 ref_axis = glm::vec3(0.0, 1.0, 0.0);
 
 // initialize keypoints, detector and descriptor for ORB
 std::vector<cv::KeyPoint> keypoints;
@@ -68,7 +71,17 @@ Ptr<DescriptorMatcher> matcher  = DescriptorMatcher::create ( "BruteForce-Hammin
 // Pose global variables
 glm::mat4 est_model_mat; // estimated model matrix
 cv::Mat Pose, prevPose;
-cv::Mat Coords3D, prevCoords3D;
+cv::Mat Coords3D, oldCoords3D;
+glm::mat4 view_mat;
+
+// PnP globa variables
+float fov_vert = glm::radians(45.0);
+cv::Mat cameraMat = cv::Mat::zeros(3, 3, CV_32F);  // intrinsic camera parameters
+cv::Mat R_matrix = cv::Mat::zeros(3, 3, CV_32F);   // rotation matrix
+cv::Mat t_matrix = cv::Mat::zeros(3, 1, CV_32F);   // translation matrix
+const cv::Mat distCoeffs = cv::Mat::zeros(4, 1, CV_32F);  // vector of distortion coefficients (no distortion in sim)
+cv::Mat rvec = cv::Mat::zeros(3, 1, CV_32F);              // output rotation vector
+cv::Mat tvec = cv::Mat::zeros(3, 1, CV_32F);              // output translation vector
 
 // -----------------------------------------------------
 
@@ -232,11 +245,11 @@ int main()
 
     // View matrix to transform to view coords
     // (shift view back so viewer is not at origin -- same as shifting world forward)
-    glm::mat4 view_mat = glm::mat4(1.0f);
-    view_mat = glm::translate(view_mat, glm::vec3(0.0, 0.0, -6.0)); // translate scene toward -z bc OpenGl is a right-handed system
+    view_mat = glm::mat4(1.0f);
+    view_mat = glm::translate(view_mat, glm::vec3(0.0, 0.0, -7.0)); // translate scene toward -z bc OpenGl is a right-handed system
     // Projection matrix to view world with correct perspective
     glm::mat4 projection_mat = glm::mat4(1.0f);
-    projection_mat = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    projection_mat = glm::perspective((float)fov_vert, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     modelShader.setMat4("view", view_mat);
     modelShader.setMat4("projection", projection_mat);
 
@@ -258,11 +271,21 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
     // create single reference image
-    OrbData3D refImgData = createRefImg(modelShader, texture, VAO, projection_mat, view_mat);
+    glm::mat4 ref_model_mat = glm::mat4(1.0f); // identity
+    ref_model_mat = glm::rotate(ref_model_mat, ref_angle, ref_axis);
+    OrbData3D refImgData = createRefImgData(modelShader, texture, VAO, projection_mat, view_mat, ref_model_mat);
+    oldCoords3D = refImgData.Features3D.clone(); // true clone of opencv matrix (not linked)
     cv::drawKeypoints( img, keypoints, outimg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
     cv::flip(outimg, outimg, 0);
     cv::imshow("Reference Image with ORB features", outimg);
     cv::waitKey(0);
+
+    // Camera matrix data for PnP algorithm
+    cameraMat.at<float>(0, 0) = ((float)SCR_HEIGHT/2.0)*std::tan(fov_vert/2.0);  //    [ fx   0  cx ]
+    cameraMat.at<float>(1, 1) = ((float)SCR_HEIGHT/2.0)*std::tan(fov_vert/2.0);  //    [  0  fy  cy ]
+    cameraMat.at<float>(0, 2) = (float)SCR_WIDTH/2.0;                            //    [  0   0   1 ]
+    cameraMat.at<float>(1, 2) = (float)SCR_HEIGHT/2.0;
+    cameraMat.at<float>(2, 2) = 1;
 
     // render loop
     // -----------
@@ -284,7 +307,13 @@ int main()
 
         // Model matrix to transform to world coords
         glm::mat4 model_mat = glm::mat4(1.0f); // identity
-        model_mat = glm::rotate(model_mat, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.3, 1.0, 0.0));
+        float sin_time = std::sin((float)glfwGetTime());
+        float cos_time = std::cos((float)glfwGetTime());
+        model_mat = glm::translate(model_mat, 0.8f*(sin_time*glm::vec3(sin_time, 1.0f, 0.5f*sin_time) + cos_time*glm::vec3(1.0f, cos_time, 0.5f*sin_time)));
+        // model_mat = glm::rotate(model_mat, (float)glfwGetTime()*glm::radians(10.0f), glm::vec3(1.0, 1.0, 0.0));
+        model_mat = glm::rotate(model_mat, glm::radians(15.0f), glm::vec3(sin_time, cos_time, 0.0));
+        model_mat = glm::rotate(model_mat, (float)glfwGetTime()*glm::radians(10.0f), glm::vec3(0.0, 0.0, 1.0));
+        model_mat = glm::rotate(model_mat, ref_angle, glm::vec3(0.0, 1.0, 0.0));
 
         // Enable the shader program for rendering model
         modelShader.use();
@@ -307,7 +336,7 @@ int main()
         // Render wireframe
         wireShader.use();
         glDisable(GL_DEPTH_TEST); // render completely in front of cereal box
-        wireShader.setMat4("model", est_model_mat); // TEMPORARY --> eventually will be using estimated model matrix here, not ground truth
+        wireShader.setMat4("model", est_model_mat);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
         glBindVertexArray(wireVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -333,14 +362,10 @@ int main()
 
 int drawORBfeatures()
 {
-  computeORBfeatures();
-
-  computeORBfeatureMatches();
+  estimatePose();
 
   cv::drawKeypoints( img, keypoints, outimg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
   cv::flip(outimg, outimg, 0);
-
-  estimatePose();
 
   postProcessingDone = true;
 
@@ -350,6 +375,20 @@ int drawORBfeatures()
   descriptorsOld = descriptors;
 
   return 0;
+}
+
+void estimatePose()
+{
+  // 1) Reference image --> orb features & descriptors of ref img --> 3D coords of features
+  // 2) Render first sim img --> orb features & descriptors of sim img --> feature matching
+  //    of image points between sim and ref features --> associate 3D object points
+  //    (w.r.t. object frame) from ref img with image points in sim img.
+  // 3) Solve EPnP problem, which inputs the 3D object points and 2D image points,
+  //    and outputs the rotation and translation vectors that transform a 3D object point
+  //    to the camera coordinate frame.
+  computeORBfeatures();
+
+  computeORBfeatureMatches();
 }
 
 void computeORBfeatures()
@@ -370,31 +409,61 @@ void computeORBfeatureMatches()
       if ( dist < min_dist ) min_dist = dist;
       if ( dist > max_dist ) max_dist = dist;
     }
+    bool short_hamming_dist;
+    int ind_old; // index of feature in old image
+    int ind_new; // index of feature in new image
+    int good_ind = 0;
+    cv::Mat OBJpoints; // 3D object points used as input to PnP method
+    cv::Mat IMGpoints; // 2D image points also used as input to PnP method
+    cv::Mat dummy_row = cv::Mat::zeros(1, 2, CV_32F); // dummy row for IMGpoints matrix
     for ( int i = 0; i < descriptorsOld.rows; i++ ) {
-        if ( matches[i].distance <= std::max( 2*min_dist, 30.0 ) )
+        short_hamming_dist = (matches[i].distance <= std::max( 2*min_dist, 30.0 )); // Is the hamming distance between features short enough?
+        //short_euclid_dist = (); // Is the euclidean distance between features short enough?
+        if ( short_hamming_dist )
         {
-          good_matches.push_back ( matches[i] );
+          good_matches.push_back ( matches[i] ); // save good matches information
+
+          // Find 2D keypoints and corresponding 3D object points
+          // ---------------------------------------------------------
+          // save 3D object points into Nx3 cv::Mat
+          ind_old = good_matches[i].trainIdx; // index of old image keypoints
+          OBJpoints.push_back(oldCoords3D.row(ind_old)); // each row of oldCoords3D is a 3D object coordinate
+
+          // save 2D img coordinates (in newer image) into Nx2 cv::Mat
+          ind_new = good_matches[i].queryIdx; // index of new image keypoints
+          IMGpoints.push_back(dummy_row);
+          IMGpoints.at<float>(good_ind, 0) = keypoints[ind_new].pt.x; // assign values in dummy row
+          IMGpoints.at<float>(good_ind, 1) = keypoints[ind_new].pt.y;
+          // ---------------------------------------------------------
+          good_ind += 1;
         }
     }
+    // Run PnP algorithm
+    // ---------------------------------------------------------
+    cv::solvePnP(OBJpoints, IMGpoints, cameraMat, distCoeffs, rvec, tvec, false, SOLVEPNP_EPNP);
+    cv::Rodrigues(rvec, R_matrix);   // converts Rotation Vector to Matrix. Rotation from obj frame to view frame
+    t_matrix = tvec;                 // set translation matrix. Translation from obj frame to view frame
+    // ---------------------------------------------------------
+
+    // Estimate pose
+    // ---------------------------------------------------------
+    // Convert to homography matrix called est_model_mat_cv,
+    cv::Mat est_model_mat_cv = R_matrix;
+    cv::hconcat(est_model_mat_cv, t_matrix, est_model_mat_cv); // concatonate the translation vector
+    cv::Mat bot_row = (cv::Mat_<float>(1, 4) << 0, 0, 0, 1);
+    est_model_mat_cv.push_back(bot_row); // add on the bottom row
+
+    cv::Mat view_mat_cv;
+    fromGLM2CV(view_mat, &view_mat_cv);
+
+    est_model_mat_cv = est_model_mat_cv * (-view_mat_cv);
+
+    fromCV2GLM(est_model_mat_cv, &est_model_mat);
+    // ---------------------------------------------------------
   }
 }
 
-void estimatePose()
-{
-  // 1) Reference image --> orb features & descriptors of ref img --> 3D coords of features
-  // 2) Render first sim img --> orb features & descriptors of sim img --> feature matching
-  //    of image points between sim and ref features --> associate 3D object points
-  //    (w.r.t. object frame) from ref img with image points in sim img.
-  // 3) Solve EPnP problem, which inputs the 3D object points and 2D image points,
-  //    and outputs the rotation and translation vectors that transform a 3D object point
-  //    to the camera coordinate frame.
-  
-  int ind1 = good_matches[i].trainIdx; // index of initial image keypoints
-  int ind2 = good_matches[i].queryIdx; // index of final image keypoints
-  keypoints[]
-}
-
-OrbData3D createRefImg(Shader modelShader, unsigned int texture, unsigned int VAO, glm::mat4 projection_mat, glm::mat4 view_mat)
+OrbData3D createRefImgData(Shader modelShader, unsigned int texture, unsigned int VAO, glm::mat4 projection_mat, glm::mat4 view_mat, glm::mat4 model_mat)
 {
    // Create single reference image
    // -----------------------------
@@ -403,9 +472,6 @@ OrbData3D createRefImg(Shader modelShader, unsigned int texture, unsigned int VA
   // bind textures on corresponding texture units
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texture);
-  // Model matrix to transform to world coords
-  glm::mat4 model_mat = glm::mat4(1.0f); // identity
-  model_mat = glm::rotate(model_mat, glm::radians(20.0f), glm::vec3(0.3, 1.0, 0.0));
   // Enable the shader program for rendering model
   modelShader.use();
   modelShader.setMat4("model", model_mat); // update uniform
@@ -464,7 +530,7 @@ cv::Mat get3Dfeatures(glm::mat4 projection_mat, glm::mat4 view_mat, glm::mat4 mo
 // https://stackoverflow.com/questions/44409443/how-a-cvmat-translate-from-to-a-glmmat4
 void fromCV2GLM(const cv::Mat& cvmat, glm::mat4* glmmat)
 {
-    if (cvmat.cols != 4 || cvmat.rows != 4 || cvmat.type() != CV_32FC1) {
+    if (cvmat.cols != 4 || cvmat.rows != 4 || cvmat.type() != CV_32F) {
         std::cout << "Matrix conversion error!" << std::endl;
         return;
     }
