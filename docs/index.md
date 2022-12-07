@@ -2,8 +2,8 @@
 
 
 ## Project Presentation Link
-Slides:
-Video:
+[Slides](https://docs.google.com/presentation/d/1wN2tkIdrWc6zNNb7Fr0up25WB-uktFyzhzcq5vQqLLs/edit?usp=sharing)\n
+Video
 
 
 # Problem
