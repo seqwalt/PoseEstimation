@@ -1,9 +1,9 @@
 # By Sequoyah Walters, Sriram Ashokkumar, and Jingxin Du
 
 
-## Project Presentation Link
-[Slides](https://docs.google.com/presentation/d/1wN2tkIdrWc6zNNb7Fr0up25WB-uktFyzhzcq5vQqLLs/edit?usp=sharing)\n
-Video
+## Project Presentation
+### [Slides](https://docs.google.com/presentation/d/1wN2tkIdrWc6zNNb7Fr0up25WB-uktFyzhzcq5vQqLLs/edit?usp=sharing)
+### Video
 
 
 # Problem
