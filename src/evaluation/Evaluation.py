@@ -2,18 +2,10 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 def translation_error(t_est, t_gt):
-<<<<<<< HEAD
-    assert (t_est.size == t_gt.size == 3)
-=======
->>>>>>> 25b9773556d5d7b6584d15ca1687855e187e5716
     t_error = np.linalg.norm(t_gt - t_est)/np.linalg.norm(t_est)
     return t_error
 
 def rotation_error(r_est, r_gt):
-<<<<<<< HEAD
-    assert (r_est.size == r_gt.size == 3)
-=======
->>>>>>> 25b9773556d5d7b6584d15ca1687855e187e5716
     tmp_est = R.from_matrix(r_est)
     tmp_gt = R.from_matrix(r_gt)
     q_est = tmp_est.as_matrix()
