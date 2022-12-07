@@ -16,15 +16,16 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/calib3d.hpp>
 
 using namespace cv;
-
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 int drawORBfeatures();
 void computeORBfeatures();
 void computeORBfeatureMatches();
+void estimatePose();
 cv::Mat get3Dfeatures(glm::mat4 projection_mat, glm::mat4 view_mat, glm::mat4 model_mat);
 void fromCV2GLM(const cv::Mat& cvmat, glm::mat4* glmmat);
 void fromGLM2CV(const glm::mat4& glmmat, cv::Mat* cvmat);
@@ -61,8 +62,13 @@ bool firstFrame = false;
 std::vector<cv::KeyPoint> keypointsOld;
 cv::Mat descriptorsOld;
 std::vector<DMatch> matches;
-std::vector< DMatch > good_matches;
+std::vector<DMatch> good_matches;
 Ptr<DescriptorMatcher> matcher  = DescriptorMatcher::create ( "BruteForce-Hamming" );
+
+// Pose global variables
+glm::mat4 est_model_mat; // estimated model matrix
+cv::Mat Pose, prevPose;
+cv::Mat Coords3D prevCoords3D;
 
 // -----------------------------------------------------
 
@@ -253,10 +259,10 @@ int main()
 
     // create single reference image
     OrbData3D refImgData = createRefImg(modelShader, texture, VAO, projection_mat, view_mat);
-    // cv::drawKeypoints( img, keypoints, outimg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
-    // cv::flip(outimg, outimg, 0);
-    // cv::imshow("Reference Image with ORB features", outimg);
-    // cv::waitKey(0);
+    cv::drawKeypoints( img, keypoints, outimg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
+    cv::flip(outimg, outimg, 0);
+    cv::imshow("Reference Image with ORB features", outimg);
+    cv::waitKey(0);
 
     // render loop
     // -----------
@@ -301,7 +307,7 @@ int main()
         // Render wireframe
         wireShader.use();
         glDisable(GL_DEPTH_TEST); // render completely in front of cereal box
-        wireShader.setMat4("model", model_mat); // TEMPORARY --> eventually will be using estimated model matrix here, not ground truth
+        wireShader.setMat4("model", est_model_mat); // TEMPORARY --> eventually will be using estimated model matrix here, not ground truth
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
         glBindVertexArray(wireVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -333,6 +339,9 @@ int drawORBfeatures()
 
   cv::drawKeypoints( img, keypoints, outimg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
   cv::flip(outimg, outimg, 0);
+
+  estimatePose();
+
   postProcessingDone = true;
 
   // matching code
@@ -368,6 +377,13 @@ void computeORBfeatureMatches()
         }
     }
   }
+}
+
+void estimatePose()
+{
+  int ind1 = good_matches[i].trainIdx; // index of initial image keypoints
+  int ind2 = good_matches[i].queryIdx; // index of final image keypoints
+  keypoints[]
 }
 
 OrbData3D createRefImg(Shader modelShader, unsigned int texture, unsigned int VAO, glm::mat4 projection_mat, glm::mat4 view_mat)
