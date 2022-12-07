@@ -68,7 +68,7 @@ Ptr<DescriptorMatcher> matcher  = DescriptorMatcher::create ( "BruteForce-Hammin
 // Pose global variables
 glm::mat4 est_model_mat; // estimated model matrix
 cv::Mat Pose, prevPose;
-cv::Mat Coords3D prevCoords3D;
+cv::Mat Coords3D, prevCoords3D;
 
 // -----------------------------------------------------
 
@@ -381,6 +381,14 @@ void computeORBfeatureMatches()
 
 void estimatePose()
 {
+  // 1) Reference image --> orb features & descriptors of ref img --> 3D coords of features
+  // 2) Render first sim img --> orb features & descriptors of sim img --> feature matching
+  //    of image points between sim and ref features --> associate 3D object points
+  //    (w.r.t. object frame) from ref img with image points in sim img.
+  // 3) Solve EPnP problem, which inputs the 3D object points and 2D image points,
+  //    and outputs the rotation and translation vectors that transform a 3D object point
+  //    to the camera coordinate frame.
+  
   int ind1 = good_matches[i].trainIdx; // index of initial image keypoints
   int ind2 = good_matches[i].queryIdx; // index of final image keypoints
   keypoints[]
@@ -419,7 +427,7 @@ OrbData3D createRefImg(Shader modelShader, unsigned int texture, unsigned int VA
   return refImgData;
 }
 
-// Extract 3D object coordinates from ORB features
+// Extract 3D object coordinates from ORB features in world frame
 // https://stackoverflow.com/questions/25687213/how-does-gl-position-becomes-a-x-y-position-in-the-window
 // https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/gluUnProject.xml
 // https://www.khronos.org/opengl/wiki/GluProject_and_gluUnProject_code
@@ -437,7 +445,7 @@ cv::Mat get3Dfeatures(glm::mat4 projection_mat, glm::mat4 view_mat, glm::mat4 mo
   for (int i = 0; i < keypoints.size(); i++){
     // Transformation of normalized coordinates between -1 and 1
     NDCpos[0] = (keypoints[i].pt.x/SCR_WIDTH)*2 - 1;
-    NDCpos[1] = (keypoints[i].pt.y/SCR_WIDTH)*2 - 1;
+    NDCpos[1] = (keypoints[i].pt.y/SCR_HEIGHT)*2 - 1;
     glReadPixels(keypoints[i].pt.x, keypoints[i].pt.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
     NDCpos[2] = 2*depth - 1;
     NDCpos[3] = 1.0f;
