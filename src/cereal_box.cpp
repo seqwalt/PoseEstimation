@@ -330,6 +330,7 @@ int main()
           postProcessingDone = false;
           // Convert texture to cv::Mat, and perform orb detection
           glReadPixels(0, 0, img.cols, img.rows, GL_BGR, GL_UNSIGNED_BYTE, img.data);
+          // drawORBfeatures();
           async_out = std::async(drawORBfeatures); // asynchronously do post-processing to not slow down simulation speed
         }
 
@@ -342,10 +343,15 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glEnable(GL_DEPTH_TEST); // re-enable depth testing
 
+
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window); // See Double Buffer note in LearnOpenGL book
         glfwPollEvents();
+
+        // std::cout << glm::to_string(est_model_mat) << std::endl;
+        // usleep(20000000);
+
     }
 
     // de-allocate all resources once they've outlived their purpose:
@@ -364,7 +370,7 @@ int drawORBfeatures()
 {
   estimatePose();
 
-  cv::drawKeypoints( img, keypoints, outimg, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
+  cv::drawKeypoints( img, keypoints, outimg, cv::Scalar(255,100,100), cv::DrawMatchesFlags::DEFAULT );
   cv::flip(outimg, outimg, 0);
 
   postProcessingDone = true;
