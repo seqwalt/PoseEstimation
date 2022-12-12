@@ -1,4 +1,5 @@
-# By Sequoyah Walters, Sriram Ashokkumar, and Jingxin Du
+# Pose Estimation
+### By Sequoyah Walters, Sriram Ashokkumar, and Jingxin Du
 
 
 ## Project Presentation
