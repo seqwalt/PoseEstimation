@@ -4,7 +4,7 @@
 
 ## Project Presentation
 ### [Slides](https://docs.google.com/presentation/d/1wN2tkIdrWc6zNNb7Fr0up25WB-uktFyzhzcq5vQqLLs/edit?usp=sharing)
-### Video
+### [Video] (https://uwprod-my.sharepoint.com/:v:/g/personal/snwalters2_wisc_edu1/EUkXcHxw2dlCgaERJGYHZI4BxNixHhj5xG-2ZKZ3xNmBFQ?e=WHZoqO)
 
 
 # Problem
@@ -15,6 +15,8 @@ usage of applications with low size, weight and power (SWaP). We estimated the o
 with similar performance to NN methods on a simple problem domain for usage by low-SWaP systems. Sim-
 plifying assumptions include knowledge of the object 3D model, a non-cluttered scene and only considering
 the pose of a single object.
+
+![Quadcopter](./assets/narrowObjectQuadcopter.png)
 
 # Motivation
 We are interested in this problem as we want to predict the pose of an object using low SWaP systems. Current solutions to this problem require extensive computation and would not be feasible in a low SWaP system. There are several applications in which this approach would be beneficial, including quick obstacle avoidance and fast object trajectory estimation. 
@@ -48,10 +50,14 @@ box), our algorithm should be able to detect features properly. -->
 
 
 ## ORB Feature Extraction and Matching
-ORB features [12] are extracted from each reference image and stored. These 2D features have known 3D counterparts. 
+ORB features are extracted from each reference image and stored. These 2D features have known 3D counterparts. 
 Next, ORB feature detection is computed over the new image, and feature matching is done between this 
 new image and a reference image. Since the features in the reference image have known 3D values, 
 this information is used for pose estimation described in the next section.
+
+![Orb Features](./assets/box_with_orb.png)
+
+![Brute Force Matching](./assets/feature_matching.png)
 
 ## Pose Estimation
 For pose estimation, we used Efficient Perspective-n-Point(EPnP) as shown in Figure 3. The EPnP
