@@ -64,11 +64,20 @@ For pose estimation, we used Efficient Perspective-n-Point(EPnP) as shown in Fig
 approach takes in the features in the image that coordinate to the 3D points as a weighted sum of four
 virtual control points. This is less computationally heavy as it allows us to reduces the problem to estimating
 the position of these control points in the camera reference frame. The solution is an accurate non-iterative
-O(n) solution to the PnP problem. 
+O(n) solution to the PnP problem.
+
+![EPnP](./assets/EPnP.png)
 
 
 ## Evaluation
 Include information from evaluation
+
+
+
+## Reflection / Future Plans
+Overall this project was a really great learning experience for both OpenCV and OpenGL simulation. 
+In the future, we plan to implement this for applications such such as a quadcomputer trying to fly 
+through a narrow gap in an object.
 
 
 
