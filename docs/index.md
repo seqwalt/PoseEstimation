@@ -77,21 +77,22 @@ large n values.
 ## Evaluation
 We evaluated the performace of our pose estimation algorithm using 4 critereas.
 1. Average Distance of Model Points (ADD): 
-Calculates the average pairwise distance between the 3D model transformed according to the ground truth pose and the estimated pose
+Calculates the average pairwise distance between the 3D model transformed according to the ground truth pose and the estimated pose.
+![ADD](./assets/ADD_equation.png)
 
 2. Average Closest Point Distance (ADD-S):
-Calculates the average distance from each 3D model point transformed according to the estimated pose to its closest neighbour on the target model according to the ground truth pose
-![EPnP](./assets/ADD-S_Equation.png)
+Calculates the average distance from each 3D model point transformed according to the estimated pose to its closest neighbour on the target model according to the ground truth pose.
+![ADD-S](./assets/ADD-S_Equation.png)
+
 Given ADD or ADD-S, we can calculate the area under the accuracy-threshold curve (AUC).
 One approach is better than another if it yields higher AUC.
 
 3. Relative Error: 
 Calculates the relative error of the estimated rotation and translation
-![EPnP](./assets/Relative_Error_Equation.png)
+![Relative Error](./assets/Relative_Error_Equation.png)
 
 4. Computational Speed:
-To evaluate the computational speed of an approach, we run the codes of that approach 10 times on our testing dataset using Macbook Air, and then record their average run time.
-One approach is better than another if it takes shorter time.
+To evaluate the computational speed of an approach, we run the codes of that approach 10 times on our testing dataset using Macbook Air, and then record their average run time. One approach is better than another if it takes shorter time.
 
 
 ## Results
