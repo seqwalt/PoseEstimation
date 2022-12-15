@@ -1,11 +1,13 @@
 # Pose Estimation
-### By Sequoyah Walters, Sriram Ashokkumar, and Jingxin Du
+### By Sequoyah Walters(NetID: snwalters2), Sriram Ashokkumar(NetID: ashokkumar2), and Jingxin Du(NetID:jdu86)
 
 
-## Project Presentation
-### [Slides](https://docs.google.com/presentation/d/1wN2tkIdrWc6zNNb7Fr0up25WB-uktFyzhzcq5vQqLLs/edit?usp=sharing)
-### [Video](https://uwprod-my.sharepoint.com/:v:/g/personal/snwalters2_wisc_edu1/EUkXcHxw2dlCgaERJGYHZI4BxNixHhj5xG-2ZKZ3xNmBFQ?e=WHZoqO)
-
+# Resources
+### [Project Presentation Slides](https://docs.google.com/presentation/d/1wN2tkIdrWc6zNNb7Fr0up25WB-uktFyzhzcq5vQqLLs/edit?usp=sharing)
+### [Project Presentation Video](https://uwprod-my.sharepoint.com/:v:/g/personal/snwalters2_wisc_edu1/EUkXcHxw2dlCgaERJGYHZI4BxNixHhj5xG-2ZKZ3xNmBFQ?e=WHZoqO)
+### [Project Proposal](https://drive.google.com/file/d/1hC8oRceYPUFodSvo5DaotZEf3OexQ76n/view?usp=share_link)
+### [Project Mid-term Report](https://drive.google.com/file/d/178fejKkhdA7yCzVx__yCsbTKTNsXARnO/view?usp=share_link)
+### [Project Source Codes](https://github.com/seqwalt/PoseEstimation)
 
 # Problem
 Many applications require the knowledge of the position and orientation (pose) of an object sometimes even
@@ -49,10 +51,17 @@ box), our algorithm should be able to detect features properly. -->
 
 ![Cereal Box](./assets/cereal_box.png)
 
+<video width="320" height="240" controls>
+    <source src="https://drive.google.com/file/d/1SqLvUjl3oCNT1KXPzjU2-KxbH9OFS9G3/view?usp=sharing" type="video/mp4">
+</video>
 
 ## ORB Feature Extraction and Matching
 For featuer extraction, we decided to go with ORB(Oriented FAST and Rotated BRIEF) features. ORB features are extracted from each reference image and stored. These 2D features have known 3D counterparts. This process is done in under 9 milliseconds.
 ![Orb Features](./assets/box_with_orb.png)
+
+<video width="320" height="240" controls>
+    <source src="https://drive.google.com/file/d/1SqLvUjl3oCNT1KXPzjU2-KxbH9OFS9G3/view?usp=sharing" type="video/mp4">
+</video>
 
 Next, ORB feature detection is computed over the new image, and feature matching is done between this 
 new image and a reference image. We decided to go with a brute force matching approach using the 
@@ -107,5 +116,7 @@ Overall this project was a really great learning experience for both OpenCV and 
 In the future, we plan to implement this for applications such as a quadcomputer trying to fly 
 through a narrow gap in an object.
 
+
+## References
 
 
