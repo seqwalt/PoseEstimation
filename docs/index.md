@@ -83,9 +83,7 @@ We evaluated the performace of our pose estimation algorithm using 4 critereas.
 
     Calculates the average pairwise distance between the 3D model transformed according to the ground truth pose and the estimated pose.
 
-    $
-        \mathrm{ADD}=\frac{1}{m} \sum_{\mathbf{x}\ \in \mathcal{M}} \left\|\left(\mathbf{R} \mathbf{x}+\mathbf{T}\right)-\left(\tilde{\mathbf{R}} \mathbf{x}+\tilde{\mathbf{T}}\right)\right\| 
-    $
+    ![ADD](./assets/ADD_equation.png)
 
     where $\mathcal{M}$ denotes the set of 3D model points, $m$ denotes the number of points, $\mathbf{R}$ denotes the ground truth rotation, $\mathbf{T}$ denotes the ground truth translation, $\tilde{\mathbf{R}}$ denotes the estimated rotation, and $\tilde{\mathbf{T}}$ denotes the estimated translation.
 
@@ -93,9 +91,7 @@ We evaluated the performace of our pose estimation algorithm using 4 critereas.
 
     Calculates the average distance from each 3D model point transformed according to the estimated pose to its closest neighbour on the target model according to the ground truth pose.
 
-    $
-        \mathrm{ADD-S}=\frac{1}{m} \sum_{\mathbf{x}_1 \in \mathcal{M}} \min _{\mathbf{x}_2 \in \mathcal{M}}\left\|\left(\mathbf{R} \mathbf{x}_1+\mathbf{T}\right)-\left(\tilde{\mathbf{R}} \mathbf{x}_2+\tilde{\mathbf{T}}\right)\right\| 
-    $
+    ![ADD-s](./assets/ADD-S_Equation.png)
 
     Given ADD or ADD-S, we can calculate the area under the accuracy-threshold curve (AUC). One approach is better than another if it yields higher AUC.
 
@@ -103,10 +99,7 @@ We evaluated the performace of our pose estimation algorithm using 4 critereas.
     
     Calculates the relative error of the estimated rotation and translation.
 
-    $
-       E_{rot}(\%) = \frac{||\mathbf{q_{true}}-\mathbf{q}||}{||\mathbf{q}||}, \quad
-       E_{trans}(\%) = \frac{||\mathbf{t_{true}}-\mathbf{t}||}{||\mathbf{t}||}
-    $
+    ![RT_error](./assets/Relative_Error_Equation.png)
 
 4. Computational Speed [2]:
 
