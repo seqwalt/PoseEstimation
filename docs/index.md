@@ -1,3 +1,15 @@
+<head>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+            inlineMath: [['$','$']]
+            }
+        });
+    </script>
+</head>
+
 # Pose Estimation
 ### By Sequoyah Walters (NetID: snwalters2), Sriram Ashokkumar (NetID: ashokkumar2), and Jingxin Du (NetID:jdu86)
 
@@ -40,7 +52,7 @@ can display in 3D a box object, as shown in the figure and video below. While th
     <em>Figure: Cereal box model in our 3D renderer (demo) </em>
 </p>
 
-<video controls>
+<video width="480" controls>
     <source src="./assets/testvid1.mp4" type="video/mp4">
 </video>
 <p>
@@ -55,7 +67,7 @@ For featuer extraction, we decided to go with ORB(Oriented FAST and Rotated BRIE
     <em>Figure: Feature extraction in our 3D renderer (demo) </em>
 </p>
 
-<video controls>
+<video width="640" controls>
     <source src="./assets/cereal_ORB.mp4" type="video/mp4">
 </video>
 <p>
