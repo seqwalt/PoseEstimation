@@ -14,6 +14,7 @@ def rotation_error(r_est, r_gt):
     r_error = np.linalg.norm(q_gt - q_est)/np.linalg.norm(q_est)
     return r_error
 
+#Reference: https://github.com/chensong1995/HybridPose/blob/master/src/evaluate.py
 def compute_add_score(pts3d, diameter, R_pred, t_pred, R_gt, t_gt, percentage=0.1):
     count = pts3d.shape[0]
     mean_distances = np.zeros((count,), dtype=np.float32)
@@ -27,6 +28,7 @@ def compute_add_score(pts3d, diameter, R_pred, t_pred, R_gt, t_gt, percentage=0.
     score = (mean_distances < threshold).sum() / count
     return score
 
+#Reference: https://github.com/chensong1995/HybridPose/blob/master/src/evaluate.py
 def compute_adds_score(pts3d, diameter, R_pred, t_pred, R_gt, t_gt, percentage=0.1):
     count = pts3d.shape[0]
     mean_distances = np.zeros((count,), dtype=np.float32)
@@ -40,46 +42,46 @@ def compute_adds_score(pts3d, diameter, R_pred, t_pred, R_gt, t_gt, percentage=0
     score = (mean_distances < threshold).sum() / count
     return score
 
+if __name__ == "__main__":
+    #example for translation error 
+    #gournd truth
+    t_gt0 = np.array([3, 2, 1])
+    #estimation
+    t_est1 = np.array([[3, 2, 1]]) 
+    t_est2 = np.array([[4, 5, 6]])
 
-#example for translation error 
-#gournd truth
-t_gt0 = np.array([3, 2, 1])
-#estimation
-t_est1 = np.array([[3, 2, 1]]) 
-t_est2 = np.array([[4, 5, 6]])
+    #translation error
+    t_err1 = translation_error(t_est1, t_gt0)
+    t_err2 = translation_error(t_est2, t_gt0)
 
-#translation error
-t_err1 = translation_error(t_est1, t_gt0)
-t_err2 = translation_error(t_est2, t_gt0)
+    print("translation error")
+    print(t_err1, t_err2)
 
-print("translation error")
-print(t_err1, t_err2)
+    #example for rotation error
+    #ground truth
+    r_gt0 = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
+    #estmation 
+    r_est1 = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
+    r_est2 = np.array([[1, 0, 0], [ 0, 0, -1],[ 0, 1, 0]])
 
-#example for rotation error
-#ground truth
-r_gt0 = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
-#estmation 
-r_est1 = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
-r_est2 = np.array([[1, 0, 0], [ 0, 0, -1],[ 0, 1, 0]])
+    #rotation error
+    r_err1 = rotation_error(r_est1, r_gt0)
+    r_err2 = rotation_error(r_est2, r_gt0)
 
-#rotation error
-r_err1 = rotation_error(r_est1, r_gt0)
-r_err2 = rotation_error(r_est2, r_gt0)
+    print("rotation error")
+    print (r_err1, r_err2)
 
-print("rotation error")
-print (r_err1, r_err2)
+    #Example for ADD(-S)
+    #sample points
+    pts3d0 = np.array([[100,100,100],[5,10,10],[1,2,3],[2,2,2]])
+    #model diameter
+    diameter0 = 100
 
-#Example for ADD(-S)
-#sample points
-pts3d0 = np.array([[100,100,100],[5,10,10],[1,2,3],[2,2,2]])
-#model diameter
-diameter0 = 100
+    add1 = compute_add_score(pts3d0, diameter0, r_est1, t_est1, r_gt0, t_gt0)
+    adds1 = compute_adds_score(pts3d0, diameter0, r_est1, t_est1, r_gt0, t_gt0)
 
-add1 = compute_add_score(pts3d0, diameter0, r_est1, t_est1, r_gt0, t_gt0)
-adds1 = compute_adds_score(pts3d0, diameter0, r_est1, t_est1, r_gt0, t_gt0)
+    add2 = compute_add_score(pts3d0, diameter0, r_est2, t_est2, r_gt0, t_gt0)
+    adds2 = compute_adds_score(pts3d0, diameter0, r_est2, t_est2, r_gt0, t_gt0)
 
-add2 = compute_add_score(pts3d0, diameter0, r_est2, t_est2, r_gt0, t_gt0)
-adds2 = compute_adds_score(pts3d0, diameter0, r_est2, t_est2, r_gt0, t_gt0)
-
-print("ADD & ADD-s")
-print (add1, adds1, add2, adds2)
+    print("ADD & ADD-s")
+    print (add1, adds1, add2, adds2)
