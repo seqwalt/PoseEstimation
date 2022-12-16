@@ -63,7 +63,12 @@ Next, ORB feature detection is computed over the new image, and feature matching
 
 ![Brute Force Matching](./assets/feature_matching.png)
 <p>
-    <em>Figure: Our feature detection and matching demo</em>
+    <em>Figure: Our feature detection and matching algorithm demo in real</em>
+</p>
+
+![Feature Matching](./assets/feature_matching2.png)
+<p>
+    <em>Figure: Our feature detection and matching algorithm demo in our 3D renderer</em>
 </p>
 
 ## Pose Estimation
@@ -73,6 +78,13 @@ For pose estimation, we used Efficient Perspective-n-Point(EPnP) as shown in the
 <p>
     <em>Figure: EPnP - Reprojection of the model of the box on three video frames demo in paper [2]</em>
 </p>
+
+![EPnP](./assets/pose_estimate.png)
+![EPnP](./assets/pose_estimate2.png)
+<p>
+    <em>Figure: Our pose estimation result demo</em>
+</p>
+
 
 # Evaluation
 ## Metrics
@@ -105,13 +117,7 @@ We evaluated the performace of our pose estimation algorithm using 4 critereas.
     To evaluate the computational speed of an approach, we run the codes of that approach 10 times on our testing dataset using Macbook Air, and then record their average run time. One approach is better than another if it takes shorter time.
 
 ## Results
-1. ADD: On average, around 75
 
-2. ADD-S: On average, around 88
-
-3. Relative Error: Translation error: On averarge, around 5%. Rotation error: On average, around 8%
-
-4. Computational Speed: On average, around 12.5 millionseconds in total
 
 # Reflection / Future Plans
 Overall this project was a really great learning experience for both OpenCV and OpenGL simulation. In the future, we plan to implement this for applications such as a quadcomputer trying to fly through a narrow gap in an object.
