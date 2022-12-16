@@ -386,8 +386,8 @@ int main()
         model_mat = glm::rotate(model_mat, (float)glfwGetTime()*glm::radians(10.0f), glm::vec3(0.0, 0.0, 1.0));
         model_mat = glm::rotate(model_mat, ref_angle, glm::vec3(0.0, 1.0, 0.0));
         // model_mat = ref_model_mat;
-        std::cout << "True model matrix" << '\n';
-        std::cout << glm::to_string(model_mat) << std::endl;
+        // std::cout << "True model matrix" << '\n';
+        // std::cout << glm::to_string(model_mat) << std::endl;
 
         // Enable the shader program for rendering model
         modelShader.use();
@@ -417,7 +417,7 @@ int main()
           ARG_DATA.transforms.model = model_mat;
           drawORBfeatures(ARG_DATA);
           curr_est_model_mat = ARG_DATA.transforms.curr_est_model;
-          std::cout << glm::to_string(curr_est_model_mat) << std::endl << std::endl;
+          // std::cout << glm::to_string(curr_est_model_mat) << std::endl << std::endl;
           // display the processed image
           cv::imshow("ORB Features", ARG_DATA.orbimg);
           cv::imshow("Feature Matching", ARG_DATA.matchimg);
@@ -507,7 +507,7 @@ void estimatePose(const cv::Mat& img, ORBdata& ORB, PnPdata& PnP, MatStruct& tra
   // Run PnP + RANSAC algorithm
   // ---------------------------------------------------------
   // RANSAC parameters
-  int iterationsCount = 1000;       // number of Ransac iterations.
+  int iterationsCount = 500;       // number of Ransac iterations.
   float reprojectionError = 8;     // maximum allowed distance to consider it an inlier.
   double confidence = 0.99;         // RANSAC successful confidence.
   cv::Mat inliers;
@@ -517,7 +517,7 @@ void estimatePose(const cv::Mat& img, ORBdata& ORB, PnPdata& PnP, MatStruct& tra
   //cv::solvePnP(PnP.OBJpoints, PnP.IMGpoints, PnP.cameraMat, PnP.distCoeffs, rvec, tvec, false, SOLVEPNP_EPNP);
   cv::solvePnPRansac(PnP.OBJpoints, PnP.IMGpoints, PnP.cameraMat, PnP.distCoeffs, rvec, tvec, false,
                iterationsCount, reprojectionError, confidence, inliers, SOLVEPNP_EPNP);
-  //std::cout << inliers << std::endl << std::endl;
+  std::cout << inliers << std::endl << std::endl;
   cv::Rodrigues(rvec, PnP.R_matrix);   // converts Rotation Vector to Matrix. Rotation from obj frame to view frame
   PnP.t_matrix = tvec;                 // set translation matrix. Translation from obj frame to view frame
 
@@ -550,8 +550,8 @@ void estimatePose(const cv::Mat& img, ORBdata& ORB, PnPdata& PnP, MatStruct& tra
   float rot_ang = glm::length(glm_rvec); // rotation angle
   glm::vec3 glm_tvec;
   fromCV2GLM_vec3(tvec, &glm_tvec);
-  std::cout << glm::to_string(glm_rvec) << '\n';
-  std::cout << glm::to_string(glm_tvec) << '\n' << '\n';
+  // std::cout << glm::to_string(glm_rvec) << '\n';
+  // std::cout << glm::to_string(glm_tvec) << '\n' << '\n';
   glm::mat4 translated_model = glm::translate(transforms.old_est_model, glm_tvec);
   transforms.curr_est_model = glm::rotate(translated_model, rot_ang, glm_rvec);
   // ---------------------------------------------------------
@@ -675,7 +675,7 @@ cv::Mat get3Dfeatures(const std::vector<cv::KeyPoint>& keypoints, const MatStruc
     objCoords.at<float>(i,1) = (float)glm_objCoords[1];
     objCoords.at<float>(i,2) = (float)glm_objCoords[2];
 
-  std::cout << glm_objCoords[2] << '\n';
+  // std::cout << glm_objCoords[2] << '\n';
   }
 
   return objCoords;
