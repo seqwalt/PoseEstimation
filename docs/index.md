@@ -116,11 +116,11 @@ We evaluated the performace of our pose estimation algorithm using 4 critereas.
 
     To evaluate the computational speed of an approach, we run the codes of that approach 10 times on our testing dataset using Macbook Air, and then record their average run time. One approach is better than another if it takes shorter time.
 
-## Results
-
+# Results
+In evaluating our method, we found that the estimated pose of the object had large amounts of noise, making it unreliable to use as a useful pose estimator. In order to try to fix this bug, many things we tried. First, as can be seen in the matching image, we made sure the feature matching was working properly. We then ensured the 3D-2D correspondences of the reference image we accurate. This was done using two different methods, both verifying the accuracy of the correspondences. Next, instead of simply implementing EPnP, we implemented EPnP with Ransac. However, even after these checks and improvements, the result was too error-prone.
 
 # Reflection / Future Plans
-Overall this project was a really great learning experience for both OpenCV and OpenGL simulation. In the future, we plan to implement this for applications such as a quadcomputer trying to fly through a narrow gap in an object.
+Overall this project was a really great learning experience for both OpenCV and OpenGL simulation. Future work includes implementing a Kalman filter to try to filter the data in order to obtain a reasonable result. After that, we plan to further implement this for applications such as a quadcomputer trying to fly through a narrow gap in an object.
 
 # References
 <div id="refer-anchor-1"></div>
