@@ -21,9 +21,6 @@ Low SWaP systems include quadcopters where there is a restriction on computing p
     <em>Figure: Quadcopter flying through narrow gap in paper [3]</em>
 </p>
 
-# Current State-of-the-Art
-Not sure if we need this
-
 # Approach
 <!-- This work aims to re-implement and improve a classical pose estimation approach for a unique setting. By considering the application of low-SWaP systems, our algorithm must be extremely light-weight and efficient in order to obtain good performance. Existing approaches do not consider the use of low-SWaP systems, so we aim to design an algorithm that can perform better for these types of systems. -->
 We predicted the pose of a single object with a known 3D model. ORB features
@@ -78,6 +75,8 @@ For pose estimation, we used Efficient Perspective-n-Point(EPnP) as shown in the
 </p>
 
 # Evaluation
+## Metrics
+
 We evaluated the performace of our pose estimation algorithm using 4 critereas.
 1. Average Distance of Model Points (ADD)[1]: 
 
@@ -105,8 +104,14 @@ We evaluated the performace of our pose estimation algorithm using 4 critereas.
 
     To evaluate the computational speed of an approach, we run the codes of that approach 10 times on our testing dataset using Macbook Air, and then record their average run time. One approach is better than another if it takes shorter time.
 
-# Results
-INCLUDE RESULTS
+## Results
+1. ADD: On average, around 75
+
+2. ADD-S: On average, around 88
+
+3. Relative Error: Translation error: On averarge, around 5%. Rotation error: On average, around 8%
+
+4. Computational Speed: On average, around 12.5 millionseconds in total
 
 # Reflection / Future Plans
 Overall this project was a really great learning experience for both OpenCV and OpenGL simulation. In the future, we plan to implement this for applications such as a quadcomputer trying to fly through a narrow gap in an object.
