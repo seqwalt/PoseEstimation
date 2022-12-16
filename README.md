@@ -1,3 +1,5 @@
+Note: the most up-to-date code is in the EPnP branch.
+
 # File system
 - PoseEstimation is an object pose estimation project utilizing OpenGL for real-time synthetic data. How to build with make is outlined below.
 - src has the source files for the project.
